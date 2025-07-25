@@ -1,0 +1,76 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-migration
+  namespace: ai-video-chaptering
+  labels:
+    app: database-migration
+    component: migration
+spec:
+  template:
+    metadata:
+      labels:
+        app: database-migration
+        component: migration
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: db-migrate
+        image: mbskafld/ai-video-chaptering-backend:latest
+        command: ["python", "-m", "flask", "db", "upgrade"]
+        envFrom:
+        - configMapRef:
+            name: ai-video-chaptering-config
+        - secretRef:
+            name: ai-video-chaptering-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      imagePullSecrets:
+      - name: skafldstudio-registry
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-preload
+  namespace: ai-video-chaptering
+  labels:
+    app: model-preload
+    component: initialization
+spec:
+  template:
+    metadata:
+      labels:
+        app: model-preload
+        component: initialization
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: model-preload
+        image: mbskafld/ai-video-chaptering-backend:latest
+        command: ["python", "-c", "from backend.src.ai.model_manager import ModelManager; ModelManager().preload_models()"]
+        envFrom:
+        - configMapRef:
+            name: ai-video-chaptering-config
+        - secretRef:
+            name: ai-video-chaptering-secrets
+        volumeMounts:
+        - name: models-storage
+          mountPath: /app/models
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+      volumes:
+      - name: models-storage
+        persistentVolumeClaim:
+          claimName: ai-models-storage
+      imagePullSecrets:
+      - name: skafldstudio-registry 

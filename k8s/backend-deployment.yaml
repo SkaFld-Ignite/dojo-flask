@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  namespace: ai-video-chaptering
+  labels:
+    app: backend-api
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+        component: api
+    spec:
+      containers:
+      - name: backend-api
+        image: python:3.11-slim
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: ai-video-chaptering-config
+        - secretRef:
+            name: ai-video-chaptering-secrets
+        volumeMounts:
+        - name: models-storage
+          mountPath: /app/models
+        - name: logs-storage
+          mountPath: /app/logs
+        - name: temp-storage
+          mountPath: /app/storage
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          failureThreshold: 30
+          periodSeconds: 10
+      volumes:
+      - name: models-storage
+        persistentVolumeClaim:
+          claimName: ai-models-storage
+      - name: logs-storage
+        persistentVolumeClaim:
+          claimName: app-logs-storage
+      - name: temp-storage
+        persistentVolumeClaim:
+          claimName: temp-storage
+      imagePullSecrets:
+      - name: skafldstudio-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-api-service
+  namespace: ai-video-chaptering
+  labels:
+    app: backend-api
+spec:
+  selector:
+    app: backend-api
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  type: ClusterIP 

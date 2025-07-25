@@ -1,0 +1,121 @@
+name: ai-video-chaptering
+region: nyc
+
+# Database
+databases:
+  - name: postgres-db
+    engine: PG
+    production: true
+    cluster_name: video-chaptering-db
+    version: "15"
+
+# Services
+services:
+  # Backend API Service
+  - name: backend-api
+    source_dir: /
+    github:
+      repo: your-username/your-repo-name
+      branch: main
+    dockerfile_path: Dockerfile
+    build_command: |
+      echo "Building backend..."
+    run_command: |
+      python -m flask db upgrade
+      gunicorn --bind 0.0.0.0:8080 --workers 2 --worker-class eventlet --timeout 300 backend.src:create_app()
+    environment_slug: python
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 8080
+    routes:
+      - path: /api
+      - path: /socket.io
+    health_check:
+      http_path: /api/health
+    envs:
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        value: ${postgres-db.DATABASE_URL}
+      - key: REDIS_URL
+        value: ${redis.REDIS_URL}
+      - key: SECRET_KEY
+        value: ${SECRET_KEY}
+        type: SECRET
+      - key: CORS_ORIGINS
+        value: https://${_self.DOMAIN},http://localhost:3000
+      - key: MODEL_CACHE_DIR
+        value: /app/models
+      - key: UPLOAD_FOLDER
+        value: /app/storage/uploads
+      - key: PROCESSED_FOLDER
+        value: /app/storage/processed
+      - key: DO_SPACES_ENDPOINT
+        value: ${DO_SPACES_ENDPOINT}
+        type: SECRET
+      - key: DO_SPACES_BUCKET
+        value: ${DO_SPACES_BUCKET}
+        type: SECRET
+      - key: DO_SPACES_ACCESS_KEY
+        value: ${DO_SPACES_ACCESS_KEY}
+        type: SECRET
+      - key: DO_SPACES_SECRET_KEY
+        value: ${DO_SPACES_SECRET_KEY}
+        type: SECRET
+
+  # Celery Worker Service
+  - name: celery-worker
+    source_dir: /
+    github:
+      repo: your-username/your-repo-name
+      branch: main
+    dockerfile_path: Dockerfile
+    run_command: |
+      celery -A backend.src.ai.celery_worker.celery worker --loglevel=info --concurrency=1
+    environment_slug: python
+    instance_count: 1
+    instance_size_slug: basic-xs
+    envs:
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        value: ${postgres-db.DATABASE_URL}
+      - key: REDIS_URL
+        value: ${redis.REDIS_URL}
+      - key: MODEL_CACHE_DIR
+        value: /app/models
+      - key: UPLOAD_FOLDER
+        value: /app/storage/uploads
+      - key: PROCESSED_FOLDER
+        value: /app/storage/processed
+      - key: USE_GPU
+        value: "false"
+      - key: DEVICE
+        value: "cpu"
+
+# Redis for job queuing
+- name: redis
+  engine: REDIS
+  production: true
+
+# Frontend static site deployment
+static_sites:
+  - name: frontend
+    source_dir: /
+    github:
+      repo: your-username/your-repo-name
+      branch: main
+    build_command: |
+      npm ci
+      npm run build
+    output_dir: /.next
+    environment_slug: node-js
+    routes:
+      - path: /
+    envs:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://${backend-api.DOMAIN}
+      - key: NEXT_PUBLIC_WS_URL
+        value: wss://${backend-api.DOMAIN}
+      - key: NODE_ENV
+        value: production 

@@ -1,0 +1,29 @@
+# Flask Core
+Flask==3.0.3
+Flask-CORS==4.0.0
+Flask-SocketIO==5.3.6
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7
+Flask-Limiter==3.5.0
+
+# Background Processing
+celery==5.3.6
+redis==5.0.1
+
+# Utilities
+Werkzeug==3.0.3
+python-magic==0.4.27
+Pillow==10.2.0
+
+# File Processing
+ffmpeg-python==0.2.0
+
+# Basic ML (without conflicts)
+numpy==1.26.4
+python-dotenv==1.0.1
+pydantic==2.6.1
+python-dateutil==2.8.2
+requests==2.31.0
+
+# Testing
+pytest==8.0.2 

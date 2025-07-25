@@ -1,0 +1,1 @@
+export { default as ChapterManager } from './ChapterManager'; 

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-flower
+  namespace: ai-video-chaptering
+  labels:
+    app: celery-flower
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-flower
+  template:
+    metadata:
+      labels:
+        app: celery-flower
+        component: monitoring
+    spec:
+      containers:
+      - name: celery-flower
+        image: mbskafld/ai-video-chaptering-backend:latest
+        command: ["celery"]
+        args: ["-A", "backend.src.ai.celery_worker.celery", "flower", "--port=5555", "--basic_auth=$(FLOWER_USER):$(FLOWER_PASSWORD)"]
+        ports:
+        - containerPort: 5555
+          name: http
+        envFrom:
+        - configMapRef:
+            name: ai-video-chaptering-config
+        - secretRef:
+            name: ai-video-chaptering-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5555
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5555
+          initialDelaySeconds: 15
+          periodSeconds: 10
+      imagePullSecrets:
+      - name: skafldstudio-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: celery-flower-service
+  namespace: ai-video-chaptering
+  labels:
+    app: celery-flower
+spec:
+  selector:
+    app: celery-flower
+  ports:
+  - port: 80
+    targetPort: 5555
+    protocol: TCP
+    name: http
+  type: ClusterIP 

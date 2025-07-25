@@ -1,36 +1,52 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Environment and secrets
+.env
+.env.*
+*.env
+skafldstudio-remotedev-kubeconfig.yaml
+kubeconfig*.yaml
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# Logs
+*.log
+logs/
 
-# testing
-/coverage
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
 
-# next.js
-/.next/
-/out/
+# Build outputs
+.next/
+dist/
+build/
+*.egg-info/
 
-# production
-/build
+# IDE
+.vscode/
+.cursor/
+*.swp
+*.swo
 
-# misc
+# OS
 .DS_Store
-*.pem
+Thumbs.db
 
-# debug
+# Docker
+.dockerignore
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# Python
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+
+# Node
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# local env files
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-__pycache__
+k8s/secrets.yaml.prod

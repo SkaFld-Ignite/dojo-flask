@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: ai-video-chaptering
+  labels:
+    app: celery-worker
+    component: worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+        component: worker
+    spec:
+      containers:
+      - name: celery-worker
+        image: mbskafld/ai-video-chaptering-backend:latest
+        command: ["celery"]
+        args: ["-A", "backend.src.ai.celery_worker.celery", "worker", "--loglevel=info", "--concurrency=2", "--max-tasks-per-child=10"]
+        envFrom:
+        - configMapRef:
+            name: ai-video-chaptering-config
+        - secretRef:
+            name: ai-video-chaptering-secrets
+        volumeMounts:
+        - name: models-storage
+          mountPath: /app/models
+        - name: logs-storage
+          mountPath: /app/logs
+        - name: temp-storage
+          mountPath: /app/storage
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - backend.src.ai.celery_worker.celery
+            - inspect
+            - ping
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - backend.src.ai.celery_worker.celery
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: models-storage
+        persistentVolumeClaim:
+          claimName: ai-models-storage
+      - name: logs-storage
+        persistentVolumeClaim:
+          claimName: app-logs-storage
+      - name: temp-storage
+        persistentVolumeClaim:
+          claimName: temp-storage
+      imagePullSecrets:
+      - name: skafldstudio-registry
+---
+# Horizontal Pod Autoscaler for Celery Workers
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: celery-worker-hpa
+  namespace: ai-video-chaptering
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: celery-worker
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80 

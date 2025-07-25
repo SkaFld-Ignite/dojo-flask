@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-backend
+  namespace: ai-video-chaptering
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-backend
+  template:
+    metadata:
+      labels:
+        app: test-backend
+    spec:
+      containers:
+      - name: test-backend
+        image: python:3.11-slim
+        command: 
+        - "sh"
+        - "-c"
+        - |
+          echo "Installing dependencies..."
+          pip install flask gunicorn psycopg2-binary redis
+          echo "Testing database connection..."
+          python -c "
+          import os
+          print('SECRET_KEY:', os.environ.get('SECRET_KEY', 'Not found')[:20] + '...')
+          print('DATABASE_URL:', os.environ.get('DATABASE_URL', 'Not found')[:50] + '...')
+          print('REDIS_URL:', os.environ.get('REDIS_URL', 'Not found')[:50] + '...')
+          "
+          echo "Keeping container running..."
+          tail -f /dev/null
+        envFrom:
+        - configMapRef:
+            name: ai-video-chaptering-config
+        - secretRef:
+            name: ai-video-chaptering-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-backend
+  namespace: ai-video-chaptering
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app: test-backend 

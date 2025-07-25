@@ -1,28 +1,68 @@
 {
-  "name": "next-flask",
+  "name": "ai-video-chaptering",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "flask-dev": "FLASK_DEBUG=1 pip3 install -r requirements.txt && python3 -m flask --app api/index run -p 5328",
-    "next-dev": "next dev",
-    "dev": "concurrently \"pnpm run next-dev\" \"pnpm run flask-dev\"",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "export": "next build && next export",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "build-and-start": "npm run build && npm run start",
+    "deploy:local": "./scripts/local-setup.sh",
+    "deploy:do": "./scripts/deploy.sh production",
+    "deploy:do-complete": "./scripts/deploy.sh complete", 
+    "deploy:do-staging": "./scripts/deploy.sh staging",
+    "deploy:k8s": "./scripts/k8s-deploy.sh production",
+    "deploy:k8s-staging": "./scripts/k8s-deploy.sh staging",
+    "setup:k8s-cluster": "./scripts/setup-cluster.sh",
+    "check-deployment": "./scripts/deploy.sh status",
+    "check-k8s": "./scripts/k8s-deploy.sh status",
+    "view-logs": "./scripts/deploy.sh logs",
+    "view-k8s-logs": "./scripts/k8s-deploy.sh logs",
+    "build:production": "NODE_ENV=production npm run build"
   },
   "dependencies": {
-    "@types/node": "20.1.4",
-    "@types/react": "18.2.6",
-    "@types/react-dom": "18.2.4",
-    "autoprefixer": "10.4.14",
-    "concurrently": "^8.0.1",
-    "eslint": "8.40.0",
-    "eslint-config-next": "13.4.2",
-    "next": "13.4.3",
-    "postcss": "8.4.23",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "next": "13.4.3",
+    "typescript": "5.0.4",
+    "@types/react": "18.2.7",
+    "@types/react-dom": "18.2.4",
+    "@types/node": "20.2.5",
     "tailwindcss": "3.3.2",
-    "typescript": "5.0.4"
-  }
+    "autoprefixer": "10.4.14",
+    "postcss": "8.4.24",
+    "socket.io-client": "^4.7.5",
+    "lucide-react": "^0.263.1"
+  },
+  "devDependencies": {
+    "eslint": "8.42.0",
+    "eslint-config-next": "13.4.3",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "ai",
+    "video",
+    "chaptering",
+    "llama",
+    "whisper",
+    "nextjs",
+    "flask",
+    "digitalocean"
+  ],
+  "description": "AI-powered video chaptering application with automated chapter generation using Llama and Whisper models",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ai-video-chaptering.git"
+  },
+  "license": "MIT"
 }

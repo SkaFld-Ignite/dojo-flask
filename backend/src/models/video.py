@@ -30,7 +30,7 @@ class Video(BaseModel):
     
     # Metadata
     thumbnail_path = db.Column(db.String(500), nullable=True)
-    metadata = db.Column(db.JSON, nullable=True)  # Store additional video metadata
+    video_metadata = db.Column(db.JSON, nullable=True)  # Store additional video metadata
     
     # Relationships
     chapters = db.relationship('Chapter', backref='video', cascade='all, delete-orphan')

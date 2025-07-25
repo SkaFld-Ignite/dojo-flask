@@ -60,7 +60,7 @@ def upload_video():
             mime_type=file.content_type,
             path=str(file_path.relative_to(upload_folder.parent)),
             processing_status='pending',
-            metadata=metadata
+            video_metadata=metadata
         )
         video.save()
         

@@ -15,7 +15,7 @@ services:
   - name: backend-api
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
     dockerfile_path: Dockerfile
     build_command: |
@@ -67,7 +67,7 @@ services:
   - name: celery-worker
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
     dockerfile_path: Dockerfile
     run_command: |
@@ -103,7 +103,7 @@ static_sites:
   - name: frontend
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
     build_command: |
       npm ci

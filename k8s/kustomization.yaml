@@ -20,9 +20,11 @@ commonLabels:
   version: v1.0.0
 
 images:
-- name: registry.digitalocean.com/skafldstudio/ai-video-chaptering-backend
+- name: python:3.11-slim
+  newName: mbskafld/ai-video-chaptering-backend
   newTag: latest
-- name: registry.digitalocean.com/skafldstudio/ai-video-chaptering-frontend
+- name: node:18-alpine  
+  newName: mbskafld/ai-video-chaptering-frontend
   newTag: latest
 
 replicas:
@@ -34,19 +36,3 @@ replicas:
   count: 3
 - name: celery-flower
   count: 1
-
-patchesStrategicMerge:
-- |-
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: backend-api
-    namespace: ai-video-chaptering
-  spec:
-    template:
-      spec:
-        containers:
-        - name: backend-api
-          env:
-          - name: CLUSTER_NAME
-            value: "skafldstudio-remotedev" 

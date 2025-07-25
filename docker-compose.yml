@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Redis for job queuing
   redis:
@@ -27,7 +25,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 30s
@@ -37,12 +34,12 @@ services:
   # Flask backend application
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      - FLASK_ENV=${FLASK_ENV:-production}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-video_chaptering}
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/video_chaptering
       - REDIS_URL=redis://redis:6379/0
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,https://*.vercel.app}
       - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
@@ -69,13 +66,13 @@ services:
   # Celery worker for background processing
   celery-worker:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
     command: celery -A backend.src.ai.celery_worker.celery worker --loglevel=info --concurrency=2
     environment:
-      - FLASK_ENV=${FLASK_ENV:-production}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-video_chaptering}
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/video_chaptering
       - REDIS_URL=redis://redis:6379/0
       - MODEL_CACHE_DIR=/app/models
       - UPLOAD_FOLDER=/app/storage/uploads
@@ -95,7 +92,7 @@ services:
   # Celery monitoring (optional)
   flower:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
     command: celery -A backend.src.ai.celery_worker.celery flower --port=5555
@@ -106,6 +103,20 @@ services:
     depends_on:
       - redis
       - celery-worker
+
+  # Next.js frontend application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:

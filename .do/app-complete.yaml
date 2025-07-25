@@ -25,7 +25,7 @@ services:
   - name: backend-api
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
       deploy_on_push: true
     dockerfile_path: Dockerfile
@@ -131,7 +131,7 @@ services:
   - name: celery-worker
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
       deploy_on_push: true
     dockerfile_path: Dockerfile
@@ -198,7 +198,7 @@ services:
   - name: celery-monitor
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
       deploy_on_push: true
     dockerfile_path: Dockerfile
@@ -227,7 +227,7 @@ static_sites:
   - name: frontend
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
       deploy_on_push: true
     build_command: |
@@ -272,7 +272,7 @@ jobs:
   - name: db-migrate
     source_dir: /
     github:
-      repo: your-username/your-repo-name
+      repo: mikebelloli/dojo-flask
       branch: main
     dockerfile_path: Dockerfile
     run_command: python -m flask db upgrade
@@ -289,7 +289,7 @@ jobs:
   - name: model-preload
     source_dir: /
     github:
-      repo: your-username/your-repo-name  
+      repo: mikebelloli/dojo-flask  
       branch: main
     dockerfile_path: Dockerfile
     run_command: python -c "from backend.src.ai.model_manager import ModelManager; ModelManager().preload_models()"

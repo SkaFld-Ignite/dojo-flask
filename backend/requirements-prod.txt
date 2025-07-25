@@ -1,9 +1,6 @@
 # Include base requirements
 -r requirements.txt
 
-# Production WSGI server
-gunicorn==21.2.0
-
 # Database adapter for PostgreSQL (production)
 psycopg2-binary==2.9.9
 

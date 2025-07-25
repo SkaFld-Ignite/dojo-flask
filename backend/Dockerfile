@@ -23,21 +23,20 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements first for better caching
-COPY backend/requirements.txt ./requirements.txt
+COPY requirements.txt ./requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source code
-COPY backend/ ./backend/
-COPY shared/ ./shared/
+COPY . ./backend/
 
 # Create necessary directories
 RUN mkdir -p storage/uploads storage/processed models logs
 
 # Set Python path
-ENV PYTHONPATH=/app/backend:/app/shared:/app
+ENV PYTHONPATH=/app/backend:/app
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app && \
